@@ -12,12 +12,36 @@ class UserSerializer(BaseUserSerializer):
         fields=("id","username","email")
 
 class MoodEntrySerializer(serializers.ModelSerializer):
+    # The app shows a recommended surah (+ reason + audio) on every mood card.
+    quran_recommendations = serializers.SerializerMethodField()
+
     class Meta:
         model = MoodEntry
-        fields = ["id", "mood", "created_at", "user","description"]
+        fields = ['id', 'mood', 'description', 'animations', 'quran_recommendations', 'user']
+
         extra_kwargs = {
-            "user": {"read_only":True}
+            'created_by': {'read_only': True}
         }
+
+    def get_quran_recommendations(self, obj):
+        recs = (
+            MoodSurahRecommendation.objects
+            .filter(mood=obj.animation)
+            .select_related('surah')
+            .prefetch_related('surah__audio_files__reciter')
+            .order_by('id')
+        )
+        data = []
+        for rec in recs:
+            audio = rec.surah.audio_files.first()
+            data.append({
+                'id': rec.id,
+                'reason': rec.reason,
+                'surah': QuranSurahSerializer(rec.surah).data,
+                'audio_url': audio.audio_url if audio else None,
+                'reciter': audio.reciter.name if audio else None,
+            })
+        return data
 class TaskListSerializer(serializers.ModelSerializer):
     class Meta:
         model = TaskList
