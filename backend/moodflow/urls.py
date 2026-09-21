@@ -18,12 +18,17 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import SimpleRouter
-from .views import MoodEntryViewSet, server,TaskListViewSet
+from .views import MoodEntryViewSet, server,TaskListViewSet,QuranSurahViewset,ReciterViewset,MoodSurahViewSet, AudioViewSet
 
 router = SimpleRouter()
 
 router.register("moods", MoodEntryViewSet, basename="mood")
 router.register("tasklists",TaskListViewSet, basename="tasklist" )
+router.register("surahs",QuranSurahViewset, basename="surah")
+router.register("reciters",ReciterViewset, basename="reciter" )
+router.register("moodsurahs", MoodSurahViewSet, basename="moodsurah")
+router.register("audios", AudioViewSet, basename="audio")
+
 
 urlpatterns = [
     path("admin/", admin.site.urls),

@@ -26,6 +26,9 @@ load_dotenv(BASE_DIR /'.env')
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv("SECRET_KEY") 
+CLIENT_ID = os.getenv("CLIENT_ID")
+CLIENT_SECRET = os.getenv("CLIENT_SECRET")
+QF_ENV = os.getenv("QF_ENV")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True

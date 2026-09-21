@@ -1,7 +1,7 @@
 from djoser.serializers import UserCreateSerializer as BaseSerializer
 from djoser.serializers import UserSerializer as BaseUserSerializer
 from rest_framework import serializers
-from .models import MoodEntry, TaskList, QuranSurah, MoodSurahRecommendation, Reciter
+from .models import MoodEntry, TaskList, QuranSurah, MoodSurahRecommendation, Reciter,QuranSurahAudio
 
 class UserCreateSerializer(BaseSerializer):
     class Meta(BaseSerializer.Meta):
@@ -49,4 +49,15 @@ class MoodSurahRecommendationSerializer(serializers.ModelSerializer):
 class ReciterSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reciter
-        fields = ["id", "reciter_id", "name", "style"]
+        fields = ["id", "reciter_id", "name"]
+
+class QuranSurahAudioSerializer(serializers.ModelSerializer):
+
+
+    class Meta:
+        model = QuranSurahAudio
+        fields = [
+            "id", "surah", "reciter",
+            "audio_url", "created_at", "updated_at",
+        ]
+        read_only_fields = ["id", "created_at", "updated_at", "audio_url"]

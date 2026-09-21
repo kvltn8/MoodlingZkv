@@ -11,7 +11,7 @@ class User(AbstractUser):
 
 
 class MoodEntry(models.Model):
-    ANIMATIONS_CHOICES = [
+    ANIMATION_CHOICES = [
         ("happy", "Happy"),
         ("calm", "Calm"),
         ("focused", "Focused"),
@@ -20,7 +20,7 @@ class MoodEntry(models.Model):
         ("anxious", "Anxious"),
         ("excited", "Excited"),
     ]        
-    animations = models.CharField(max_length=20, choices=ANIMATIONS_CHOICES, default="happy")
+    animations = models.CharField(max_length=20, choices=ANIMATION_CHOICES, default="happy")
     description = models.TextField(blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="moods")
     mood = models.CharField(max_length=50)
@@ -36,7 +36,7 @@ class TaskList(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
     created_at=models.DateField(auto_now_add=True)
     def __str__(self):
-        return f"{self.user.username},{self.Task}, {self.about}, {self.created_at}"
+        return f"{self.user.username},{self.Task}, {self.created_at}"
 
 
 class QuranSurah(models.Model):
@@ -69,17 +69,14 @@ class QuranSurahAudio(models.Model):
         on_delete=models.CASCADE,
         related_name="audio_files",
     )
-    reciter_id = models.PositiveIntegerField()
-    reciter_name = models.CharField(max_length=255)
+    reciter = models.ForeignKey(Reciter, on_delete=models.CASCADE, related_name="audio")
     audio_url = models.URLField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
     class Meta:
         constraints = [
             models.UniqueConstraint(
-                fields=["surah", "reciter_id"],
-                name="unique_surah_reciter_audio",
+                fields =["surah", "reciter"], name="unique_surah_reciter_audio"
             )
         ]
 
@@ -90,7 +87,7 @@ class QuranSurahAudio(models.Model):
 class MoodSurahRecommendation(models.Model):
     mood = models.CharField(
         max_length=50,
-        choices=MoodsEntry.ANIMATION_CHOICES,   
+        choices=MoodEntry.ANIMATION_CHOICES,   
     )
     surah = models.ForeignKey(
         QuranSurah,
