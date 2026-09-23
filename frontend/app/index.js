@@ -25,7 +25,7 @@ export default function Index() {
   useEffect(() => {
     if (!typingDone || isRestoring) return;
     const t = setTimeout(() => {
-      router.replace(session ? "/(tabs)/mood" : "/(auth)/login");
+      router.replace(session ? "/(tabs)/home" : "/(auth)/login");
     }, HOLD_AFTER);
     return () => clearTimeout(t);
   }, [typingDone, isRestoring, session]);

@@ -40,12 +40,34 @@ class  ReciterViewset(viewsets.ModelViewSet):
    # permission_classes = [IsAuthenticated, IsAdminUser]
 class MoodSurahViewSet(viewsets.ModelViewSet):
     serializer_class = MoodSurahRecommendationSerializer
-    queryset = MoodSurahRecommendation.objects.all()
+    queryset = MoodSurahRecommendation.objects.select_related("surah").all()
    # permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        # Lets the app ask for recommendations that match a specific mood,
+        # e.g. GET /moodsurahs/?mood=anxious
+        qs = super().get_queryset()
+        mood = self.request.query_params.get("mood")
+        if mood:
+            qs = qs.filter(mood=mood)
+        return qs
 
 class AudioViewSet(viewsets.ModelViewSet):
     serializer_class = QuranSurahAudioSerializer
     queryset = QuranSurahAudio.objects.select_related("surah", "reciter").all()
+
+    def get_queryset(self):
+        # Lets the app look up an existing recitation for a surah (and
+        # optionally a specific reciter) without fetching every audio row.
+        # e.g. GET /audios/?surah=18
+        qs = super().get_queryset()
+        surah_id = self.request.query_params.get("surah")
+        reciter_id = self.request.query_params.get("reciter")
+        if surah_id:
+            qs = qs.filter(surah_id=surah_id)
+        if reciter_id:
+            qs = qs.filter(reciter_id=reciter_id)
+        return qs
 
     def get_permissions(self):
         if self.request.method in ["POST","PATCH", "PUT", "DELETE"]:

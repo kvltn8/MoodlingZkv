@@ -45,4 +45,24 @@ export const api = {
   updateTask: (token, id, payload) =>
     request(`/tasklists/${id}/`, { method: "PATCH", token, body: payload }),
   deleteTask: (token, id) => request(`/tasklists/${id}/`, { method: "DELETE", token }),
+
+  listSurahs: (token) => request("/surahs/", { token }),
+  listReciters: (token) => request("/reciters/", { token }),
+
+  // Recommendations matching a mood, e.g. api.listMoodSurahs(token, "anxious").
+  // Each item includes `surah_detail` (full QuranSurah) so no extra request
+  // is needed to show the name/verse count.
+  listMoodSurahs: (token, mood) =>
+    request(`/moodsurahs/${mood ? `?mood=${encodeURIComponent(mood)}` : ""}`, { token }),
+
+  // Looks up an already-recorded recitation. Regular users can only read
+  // these (creating one requires an admin, since it calls the paid Quran
+  // Foundation API) - pass a surah id, and optionally a reciter id.
+  listAudios: (token, { surah, reciter } = {}) => {
+    const params = new URLSearchParams();
+    if (surah != null) params.set("surah", surah);
+    if (reciter != null) params.set("reciter", reciter);
+    const qs = params.toString();
+    return request(`/audios/${qs ? `?${qs}` : ""}`, { token });
+  },
 };

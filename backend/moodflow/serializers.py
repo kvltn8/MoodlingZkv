@@ -17,16 +17,16 @@ class MoodEntrySerializer(serializers.ModelSerializer):
 
     class Meta:
         model = MoodEntry
-        fields = ['id', 'mood', 'description', 'animations', 'quran_recommendations', 'user']
+        fields = ['id', 'mood', 'description', 'animations', 'quran_recommendations', 'user', 'created_at']
 
         extra_kwargs = {
-            'created_by': {'read_only': True}
+            'user': {'read_only': True}
         }
 
     def get_quran_recommendations(self, obj):
         recs = (
             MoodSurahRecommendation.objects
-            .filter(mood=obj.animation)
+            .filter(mood=obj.animations)
             .select_related('surah')
             .prefetch_related('surah__audio_files__reciter')
             .order_by('id')
@@ -66,9 +66,13 @@ class QuranSurahSerializer(serializers.ModelSerializer):
         ]
 
 class MoodSurahRecommendationSerializer(serializers.ModelSerializer):
+    # Full surah info on read, so the frontend doesn't need a second request
+    # per recommendation. Writes still go through `surah` (the FK id).
+    surah_detail = QuranSurahSerializer(source="surah", read_only=True)
+
     class Meta:
         model = MoodSurahRecommendation
-        fields = ['id', 'mood', 'surah', 'reason']
+        fields = ['id', 'mood', 'surah', 'surah_detail', 'reason']
 
 class ReciterSerializer(serializers.ModelSerializer):
     class Meta:
