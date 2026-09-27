@@ -11,3 +11,4 @@ supabase==2.31.0
 #dotenv==1.2.2
 django-cors-headers==4.6.0
 whitenoise==6.8.2
+gunicorn==26.1.0

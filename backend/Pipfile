@@ -15,6 +15,7 @@ dotenv = "*"
 django-cors-headers = "*"
 quran-foundation-api = "*"
 whitenoise = "*"
+gunicorn = "*"
 
 [dev-packages]
 
