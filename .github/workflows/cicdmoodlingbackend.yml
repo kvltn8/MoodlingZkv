@@ -1,0 +1,71 @@
+name: moodlingz
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: backend
+
+    env:
+      SECRET_KEY: ${{ secrets.SECRET_KEY }}
+      CLIENT_ID: ${{ vars.CLIENT_ID }}
+      CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
+      ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build docker image
+        run: docker build -t moodling .
+
+      - name: Run container
+        run: |
+          docker run -d -p 8000:8000 --name moodlingcontainer \
+            -e SECRET_KEY="$SECRET_KEY" \
+            -e CLIENT_ID="$CLIENT_ID" \
+            -e CLIENT_SECRET="$CLIENT_SECRET" \
+            -e ALLOWED_HOSTS="$ALLOWED_HOSTS" \
+            moodling
+
+      - name: Check container
+        run: docker ps -a
+
+      - name: Wait for app
+        run: |
+          for i in {1..10}; do
+            if curl -s http://localhost:8000/admin/; then
+              echo "app is running"
+              exit 0
+            fi
+
+            echo "waiting for app to start"
+            sleep 2
+          done
+
+          echo "app failed to start"
+          exit 1
+
+      - name: Show container logs
+        if: always()
+        run: docker logs moodlingcontainer
+
+      - name: List Files
+        run: ls -la
+
+      - name: Run Health Check
+        run: curl -f http://localhost:8000/admin/
+
+      - name: Cleanup container
+        if: always()
+        run: docker stop moodlingcontainer && docker rm moodlingcontainer
+
+      - name: Echo Message
+        run: echo "Hello, CI/CD successful"
