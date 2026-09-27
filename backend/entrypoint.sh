@@ -28,4 +28,4 @@ else:
 PY
 
 echo "starting gunicorn......"
-exec gunicorn kaltunsAbayaShop.wsgi:application --bind 0.0.0.0:$PORT
+exec gunicorn moodflow.wsgi:application --bind 0.0.0.0:$PORT
