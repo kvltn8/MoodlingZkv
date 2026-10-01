@@ -10,7 +10,7 @@ AUTH_BASE_BY_ENV = {
 
 
 def get_access_token():
-    env = "prelive"
+    env = "production"
     if env not in AUTH_BASE_BY_ENV:
         raise ValueError(
             f"Invalid QF_ENV value: {env!r}. Expected 'prelive' or 'production'."
@@ -21,8 +21,8 @@ def get_access_token():
     response = requests.post(
         f"{AUTH_BASE_URL}/oauth2/token",
         auth=HTTPBasicAuth(
-            '300ea3c2-f4b4-4cc1-8417-0108b39c4dd0',
-            'qfcs_9c6a261443d04761bb96020b9a49d347c4f55af049234ae086b187d808a6235a',
+            '05202cd3-745a-49d5-b765-e2468879b842',
+            'qfcs_9dd808a8ff3b4d068e0f3862f258bfaf43a078952abf41f9a991ed21ce9806af',
         ),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         data={
