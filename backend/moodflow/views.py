@@ -13,19 +13,21 @@ def server(request):
 
 class MoodEntryViewSet(viewsets.ModelViewSet):
     serializer_class = MoodEntrySerializer
-    #permission_classes = [IsAuthenticated]
+    # Required: get_queryset filters by request.user, which crashes (HTTP 500) for anonymous requests
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return MoodEntry.objects.filter(user=self.request.user)
+        return MoodEntry.objects.filter(user=self.request.user).order_by("-id")
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
 class TaskListViewSet(viewsets.ModelViewSet):
     serializer_class = TaskListSerializer
-    #Permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]  # was commented out (and misspelled Permission_classes)
+
     def get_queryset(self):
-        return TaskList.objects.filter(user=self.request.user)
+        return TaskList.objects.filter(user=self.request.user).order_by("-id")
     
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)

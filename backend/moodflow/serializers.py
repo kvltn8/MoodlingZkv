@@ -12,16 +12,20 @@ class UserSerializer(BaseUserSerializer):
         fields=("id","username","email")
 
 class MoodEntrySerializer(serializers.ModelSerializer):
+    # The app speaks name / note / animation / created_by; the model stores
+    # mood / description / animations / user. `source=` bridges the two, so no
+    # model rename or data migration is needed.
+    name = serializers.CharField(source="mood", max_length=50)
+    note = serializers.CharField(source="description", required=False, allow_blank=True)
+    animation = serializers.ChoiceField(source="animations", choices=MoodEntry.ANIMATION_CHOICES)
+    created_by = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
     # The app shows a recommended surah (+ reason + audio) on every mood card.
     quran_recommendations = serializers.SerializerMethodField()
 
     class Meta:
         model = MoodEntry
-        fields = ['id', 'mood', 'description', 'animations', 'quran_recommendations', 'user', 'created_at']
-
-        extra_kwargs = {
-            'user': {'read_only': True}
-        }
+        fields = ['id', 'name', 'note', 'animation', 'quran_recommendations', 'created_by', 'created_at']
+        read_only_fields = ['created_at']
 
     def get_quran_recommendations(self, obj):
         recs = (
@@ -43,12 +47,14 @@ class MoodEntrySerializer(serializers.ModelSerializer):
             })
         return data
 class TaskListSerializer(serializers.ModelSerializer):
+    # App contract: title / end_date / created_by / updated_at. Model field `Task` stays as is.
+    title = serializers.CharField(source="Task", max_length=100)
+    created_by = serializers.PrimaryKeyRelatedField(source="user", read_only=True)
+
     class Meta:
         model = TaskList
-        fields=("id", "Task","note","is_done","user","created_at")
-        extra_kwargs = {
-            "user": {"read_only":True}
-        }
+        fields = ("id", "title", "note", "is_done", "end_date", "created_by", "created_at", "updated_at")
+        read_only_fields = ("created_at", "updated_at")
 
 
 class QuranSurahSerializer(serializers.ModelSerializer):

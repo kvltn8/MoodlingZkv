@@ -33,8 +33,10 @@ class TaskList(models.Model):
     Task = models.CharField(max_length=100)
     note = models.TextField(blank=True)
     is_done = models.BooleanField(default=False)
+    end_date = models.DateField(null=True, blank=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tasks")
     created_at=models.DateField(auto_now_add=True)
+    updated_at = models.DateField(auto_now=True)
     def __str__(self):
         return f"{self.user.username},{self.Task}, {self.created_at}"
 
@@ -81,7 +83,7 @@ class QuranSurahAudio(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.surah} - {self.reciter_name}"
+        return f"{self.surah} - {self.reciter.name}"
 
 
 class MoodSurahRecommendation(models.Model):
@@ -97,4 +99,4 @@ class MoodSurahRecommendation(models.Model):
     reason = models.TextField()
 
     def __str__(self):
-        return f"{self.mood} → {self.surah.name_english}"  
+        return f"{self.mood} → {self.surah.name_english}"
