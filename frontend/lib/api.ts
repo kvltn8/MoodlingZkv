@@ -1,15 +1,24 @@
+import Constants from "expo-constants";
 import type { Mood, Paginated, Task, User } from "./types";
 
-const API_URL = (process.env.EXPO_PUBLIC_API_URL || "http://localhost:8000").replace(/\/$/, "");
-
-if (!process.env.EXPO_PUBLIC_API_URL) {
-  // localhost only works on web/iOS simulator. Android emulator needs 10.0.2.2,
-  // a physical device needs your machine's LAN IP.
-  console.warn("EXPO_PUBLIC_API_URL is not set, falling back to http://localhost:8000");
+// Where the Django server lives:
+// 1. EXPO_PUBLIC_API_URL if set (use this for a deployed backend)
+// 2. otherwise the same machine that is serving the Expo bundle (your computer's LAN IP),
+//    so a physical phone reaches Django without any config
+// 3. otherwise localhost (web / simulator)
+function resolveApiUrl(): string {
+  const fromEnv = process.env.EXPO_PUBLIC_API_URL;
+  if (fromEnv) return fromEnv.replace(/\/$/, "");
+  const host = Constants.expoConfig?.hostUri?.split(":")[0];
+  if (host) return `http://${host}:8000`;
+  return "http://localhost:8000";
 }
 
-// Must match SIMPLE_JWT["AUTH_HEADER_TYPES"] in settings.py (default is "Bearer")
-const AUTH_SCHEME = "Bearer";
+const API_URL = resolveApiUrl();
+if (__DEV__) console.log(`[api] using ${API_URL}`);
+
+// Must match SIMPLE_JWT["AUTH_HEADER_TYPES"] in backend settings.py, which is ('JWT',)
+const AUTH_SCHEME = "JWT";
 const TIMEOUT_MS = 15000;
 
 /* ---------- Errors ---------- */
@@ -48,6 +57,12 @@ function formatError(data: unknown, fallback: string): string {
 let accessToken: string | null = null;
 let refreshToken: string | null = null;
 let onUnauthorized: (() => void) | null = null;
+let onTokensChanged: ((tokens: { access: string; refresh: string | null }) => void) | null = null;
+
+// Lets the auth layer persist tokens that were silently refreshed
+export function setTokensChangedHandler(handler: typeof onTokensChanged) {
+  onTokensChanged = handler;
+}
 
 export function setApiTokens(tokens: { access: string | null; refresh?: string | null }) {
   accessToken = tokens.access;
@@ -81,6 +96,7 @@ function tryRefresh(): Promise<boolean> {
         );
         accessToken = res.access;
         if (res.refresh) refreshToken = res.refresh; // when ROTATE_REFRESH_TOKENS is on
+        onTokensChanged?.({ access: res.access, refresh: refreshToken });
         return true;
       } catch {
         return false;
