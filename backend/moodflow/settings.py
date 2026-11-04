@@ -101,6 +101,9 @@ WSGI_APPLICATION = 'moodflow.wsgi.application'
    ## }
 #}
 DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise ValueError("DATABASE_URL is missing. Check your .env file.")
+
 DATABASES = {
     'default': dj_database_url.parse(
         DATABASE_URL,conn_max_age = 600,
