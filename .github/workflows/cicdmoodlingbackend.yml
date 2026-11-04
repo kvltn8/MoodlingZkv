@@ -16,11 +16,14 @@ jobs:
       CLIENT_ID: ${{ vars.CLIENT_ID }}
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
-      CORS_ALLOWED_ORIGINS: ${{vars.CORS_ALLOWED_ORIGINS}}
+      CORS_ALLOWED_ORIGINS: ${{ vars.CORS_ALLOWED_ORIGINS }}
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DJANGO_SUPERUSER_USERNAME: ${{ vars.SUPERUSER_USERNAME }}
+      DJANGO_SUPERUSER_EMAIL: ${{ vars.SUPERUSER_EMAIL }}
+      DJANGO_SUPERUSER_PASSWORD: ${{ secrets.SUPERUSER_PASSWORD }}
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Build docker image
         run: docker build -t moodling .
@@ -34,37 +37,38 @@ jobs:
             -e ALLOWED_HOSTS="$ALLOWED_HOSTS" \
             -e CORS_ALLOWED_ORIGINS="$CORS_ALLOWED_ORIGINS" \
             -e DATABASE_URL="$DATABASE_URL" \
+            -e DJANGO_SUPERUSER_USERNAME="$DJANGO_SUPERUSER_USERNAME" \
+            -e DJANGO_SUPERUSER_EMAIL="$DJANGO_SUPERUSER_EMAIL" \
+            -e DJANGO_SUPERUSER_PASSWORD="$DJANGO_SUPERUSER_PASSWORD" \
             moodling
+
       - name: Check container
         run: docker ps -a
-      - name: Debug container
-        run: |
-          sleep 5
-          docker ps -a
-          docker logs moodlingcontainer
-          docker exec moodlingcontainer sh -c "ps aux; netstat -tlnp 2>/dev/null || ss -tlnp"
 
       - name: Wait for app
         run: |
-          for i in {1..10}; do
-            if curl -s http://localhost:8000/; then
+          for i in {1..30}; do
+            if curl -s -o /dev/null http://localhost:8000/; then
               echo "app is running"
               exit 0
             fi
-            echo "waiting for app to start"
+            echo "waiting for app to start ($i/30)"
             sleep 2
           done
           echo "app failed to start"
+          docker logs moodlingcontainer
           exit 1
+
       - name: Show container logs
         if: always()
         run: docker logs moodlingcontainer
-      - name: List Files
-        run: ls -la
+
       - name: Run Health Check
         run: curl -f http://localhost:8000/
+
       - name: Cleanup container
         if: always()
         run: docker stop moodlingcontainer && docker rm moodlingcontainer
+
       - name: Echo Message
         run: echo "Hello, CI/CD successful"
