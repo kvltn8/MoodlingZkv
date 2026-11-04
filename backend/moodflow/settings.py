@@ -33,17 +33,12 @@ QF_ENV = os.getenv("QF_ENV")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-def env_list(name):
-    # "a, b,,c" -> ["a", "b", "c"]. A bare "".split(",") gives [""], which breaks
-    # ALLOWED_HOSTS (every request 400s) and django-cors-headers (startup check fails).
-    return [item.strip() for item in os.getenv(name, "").split(",") if item.strip()]
-
 
 # With no ALLOWED_HOSTS set, allow any host while DEBUG is on so a phone on your LAN can connect
-ALLOWED_HOSTS = env_list("ALLOWED_HOSTS") or (["*"] if DEBUG else [])
-CORS_ALLOWED_ORIGINS = env_list("CORS_ALLOWED_ORIGINS")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",") 
+CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 # Expo web dev server (localhost:8081) needs CORS; native apps don't. Open only in DEBUG with no explicit list.
-CORS_ALLOW_ALL_ORIGINS = DEBUG and not CORS_ALLOWED_ORIGINS
+CORS_ALLOW_ALL_ORIGINS = True
 
 
 # Application definition
@@ -105,11 +100,12 @@ WSGI_APPLICATION = 'moodflow.wsgi.application'
         #'NAME': BASE_DIR / 'db.sqlite3',
    ## }
 #}
+DATABASE_URL = os.getenv("DATABASE_URL")
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.parse(
+        DATABASE_URL,conn_max_age = 600,
+        ssl_required = True
+    )
 }
 REST_FRAMEWORK = {
     # Use Django's standard `django.contrib.auth` permissions,
