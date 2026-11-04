@@ -36,7 +36,7 @@ DEBUG = True
 
 # With no ALLOWED_HOSTS set, allow any host while DEBUG is on so a phone on your LAN can connect
 ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",") 
-CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+#CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
 # Expo web dev server (localhost:8081) needs CORS; native apps don't. Open only in DEBUG with no explicit list.
 CORS_ALLOW_ALL_ORIGINS = True
 
