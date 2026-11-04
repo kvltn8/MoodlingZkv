@@ -37,6 +37,12 @@ jobs:
             moodling
       - name: Check container
         run: docker ps -a
+      - name: Debug container
+        run: |
+          sleep 5
+          docker ps -a
+          docker logs moodlingcontainer
+          docker exec moodlingcontainer sh -c "ps aux; netstat -tlnp 2>/dev/null || ss -tlnp"
 
       - name: Wait for app
         run: |
