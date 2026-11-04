@@ -17,7 +17,7 @@ jobs:
       CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
       ALLOWED_HOSTS: ${{ vars.ALLOWED_HOSTS }}
       CORS_ALLOWED_ORIGINS: ${{vars.CORS_ALLOWED_ORIGINS}}
-      DATABASE_URL: ${{ secrets.DATABASE_URL}}
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -34,7 +34,6 @@ jobs:
             -e ALLOWED_HOSTS="$ALLOWED_HOSTS" \
             -e CORS_ALLOWED_ORIGINS="$CORS_ALLOWED_ORIGINS" \
             -e DATABASE_URL="$DATABASE_URL" \
-
             moodling
       - name: Check container
         run: docker ps -a
